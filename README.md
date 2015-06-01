@@ -1,1 +1,0 @@
-# trytond-report-html-accounts
