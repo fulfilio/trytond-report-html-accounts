@@ -1,0 +1,5 @@
+[run]
+source = trytond.modules.report_html_accounts
+
+[report]
+omit = */tests/*, */setup.py
