@@ -81,6 +81,7 @@ major_version = int(major_version)
 minor_version = int(minor_version)
 
 requires = []
+tests_require = []
 
 MODULE2PREFIX = {}
 
@@ -100,6 +101,19 @@ requires.append(
         major_version, minor_version, major_version, minor_version + 1
     )
 )
+
+requires.append(
+    'openlabs_report_webkit >= %s.%s, < %s.%s' % (
+        major_version, minor_version, major_version, minor_version + 1
+    )
+)
+
+tests_require.append(
+    'trytond_account_invoice >= %s.%s, < %s.%s' % (
+        major_version, minor_version, major_version, minor_version + 1
+    )
+)
+
 setup(
     name='%s_%s' % (PREFIX, MODULE),
     version=info.get('version', '0.0.1'),
@@ -115,8 +129,10 @@ setup(
     package_data={
         'trytond.modules.%s' % MODULE: info.get('xml', [])
         + info.get('translation', [])
-        + ['tryton.cfg', 'locale/*.po', 'tests/*.rst', 'reports/*.odt']
-        + ['view/*.xml'],
+        + ['tryton.cfg', 'locale/*.po', 'tests/*.rst']
+        + ['view/*.xml', 'reports/*.odt', 'reports/*.html']
+        + ['web/static/images/passbook/*.png', 'reports/css/bootstrap/css/*']
+        + ['reports/css/bootstrap/fonts/*', 'reports/css/font-awesome/css/*']
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -139,6 +155,7 @@ setup(
     """ % (MODULE, MODULE),
     test_suite='tests',
     test_loader='trytond.test_loader:Loader',
+    tests_require=tests_require,
     cmdclass={
         'test': SQLiteTest,
         'test_on_postgres': PostgresTest,
