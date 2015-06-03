@@ -11,6 +11,7 @@ import trytond.tests.test_tryton
 
 from tests.test_views_depends import TestViewsDepends
 from test_party import TestParty
+from test_invoice import TestInvoice
 
 
 def suite():
@@ -20,7 +21,8 @@ def suite():
     test_suite = trytond.tests.test_tryton.suite()
     test_suite.addTests([
         unittest.TestLoader().loadTestsFromTestCase(TestViewsDepends),
-        unittest.TestLoader().loadTestsFromTestCase(TestParty)
+        unittest.TestLoader().loadTestsFromTestCase(TestParty),
+        unittest.TestLoader().loadTestsFromTestCase(TestInvoice),
     ])
     return test_suite
 

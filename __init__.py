@@ -10,6 +10,7 @@ from report_html_accounts import PartyAccountStatementReport, \
     GeneratePartyAccountStatementReportStart, \
     GeneratePartyAccountStatementReport, Party
 from account import AccountMoveLine
+from invoice import InvoiceHTMLReport
 
 
 def register():
@@ -28,5 +29,6 @@ def register():
     )
     Pool.register(
         PartyAccountStatementReport,
+        InvoiceHTMLReport,
         module='report_html_accounts', type_='report'
     )

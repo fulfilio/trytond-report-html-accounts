@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        <record model="ir.action.wizard" id="account_invoice.print">
+            <field name="active" eval="False"/>
+        </record>
+        <record model="ir.action.report" id="report_invoice_html">
+            <field name="name">Invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="report_name">account.invoice.html</field>
+            <field name="report">report_html_accounts/reports/invoice.html</field>
+        </record>
+        <record model="ir.action.keyword" id="print_keyword">
+            <field name="keyword">form_print</field>
+            <field name="model">account.invoice,-1</field>
+            <field name="action" ref="report_invoice_html"/>
+        </record>
+    </data>
+</tryton>

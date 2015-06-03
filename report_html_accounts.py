@@ -27,11 +27,10 @@ __all__ = [
 __metaclass__ = PoolMeta
 
 
-class PartyAccountStatementReport(ReportWebkit):
+class ReportMixin(ReportWebkit):
     """
-    Party Account Statement Report
+    Mixin Class to inherit from, for all HTML reports.
     """
-    __name__ = 'report.party_account_statement'
 
     @classmethod
     def wkhtml_to_pdf(cls, data, options=None):
@@ -54,9 +53,16 @@ class PartyAccountStatementReport(ReportWebkit):
             'footer-right': '[page]/[toPage]',
             'footer-spacing': '5',
         }
-        return super(PartyAccountStatementReport, cls).wkhtml_to_pdf(
+        return super(ReportMixin, cls).wkhtml_to_pdf(
             data, options=options
         )
+
+
+class PartyAccountStatementReport(ReportMixin):
+    """
+    Party Account Statement Report
+    """
+    __name__ = 'report.party_account_statement'
 
     @classmethod
     def parse(cls, report, records, data, localcontext):
@@ -236,10 +242,10 @@ class Party:
         move = Move.__table__()
 
         user_id = Transaction().user
-        if user_id == 0 and 'user' in Transaction().context:  # pragma: no cover
+        if user_id == 0 and 'user' in Transaction().context:
             user_id = Transaction().context['user']
         user = User(user_id)
-        if not user.company:  # pragma: no cover
+        if not user.company:
             return _ZERO
         company_id = user.company.id
 
