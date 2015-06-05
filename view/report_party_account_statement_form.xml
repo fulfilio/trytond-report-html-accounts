@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<form string="Generate Account Statement" col="4">
+    <label name="consider_maturity_date" />
+    <field name="consider_maturity_date" />
+    <label name="hide_reconciled_lines" />
+    <field name="hide_reconciled_lines" />
+    <label name="amount_format" />
+    <field name="amount_format" />
+    <newline />
+    <label name="start_date" />
+    <field name="start_date" />
+    <label name="end_date" />
+    <field name="end_date" />
+</form>
