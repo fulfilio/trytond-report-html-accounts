@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        <record model="ir.action.report" id="report_party_account_statement">
+            <field name="name">Account Statement</field>
+            <field name="model"></field>
+            <field name="report_name">report.party_account_statement</field>
+            <field name="report">report_html_accounts/reports/party_account_statement.html</field>
+        </record>
+        <record model="ir.ui.view" id="report_party_account_statement_view_form">
+            <field name="model">report.party_account_statement.wizard.start</field>
+            <field name="type">form</field>
+            <field name="name">report_party_account_statement_form</field>
+        </record>
+        <record model="ir.action.wizard" id="wizard_party_account_statement_report">
+            <field name="name">Account Statement</field>
+            <field name="wiz_name">report.party_account_statement.wizard</field>
+        </record>
+        <record model="ir.action.keyword" id="run_party_account_statement_wizard">
+            <field name="keyword">form_action</field>
+            <field name="model">party.party,-1</field>
+            <field name="action" ref="wizard_party_account_statement_report"/>
+        </record>
+    </data>
+</tryton>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}Account Statement{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="author" content="Fulfil.IO Inc.">
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="{{ 'report_html_accounts/reports/css/bootstrap/css/bootstrap.min.css'|modulepath }}">
+        <link rel="stylesheet" href="{{ 'report_html_accounts/reports/css/font-awesome/css/font-awesome.min.css'|modulepath }}">
+        <link href='http://fonts.googleapis.com/css?family=Lora' rel='stylesheet' type='text/css'>
+        <style type="text/css">
+          hr {
+            border-top: 1px solid #000;
+          }
+          .h3 {
+            font-size: 16px;
+          }
+          .h4 {
+            font-size: 14px;
+          }
+          body {
+            font-family: 'Lora', serif;
+            font-size: 10px;
+          }
+          tbody tr {
+            page-break-inside: avoid;
+          }
+        </style>
+    </head>
+    <body>
+      {% macro display_balance(opening_balance, currency) %}
+        {% if opening_balance < 0 %}
+          {{ - opening_balance|currencyformat(currency.code) }} Cr
+        {% elif opening_balance > 0 %}
+          {{ opening_balance|currencyformat(currency.code) }} Dr
+        {% else %}
+          {{ opening_balance|currencyformat(currency.code) }}
+        {% endif %}
+      {% endmacro %}
+      {% block main %}
+        <div class="container-fluid">
+            <div class="row">
+              <div class="col-xs-6">
+                  <div>
+                      {% block header_logo %}
+                      {% endblock %}
+                  </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="row">
+                  <div class="col-xs-12">
+                    <span class="h3">{% block header_title %}Account Statement{% endblock %}</span>
+                  </div>
+                </div>
+                <div class="row" style="padding-top:20px;">
+                    {% block header_content scoped %}
+                        <div class="col-xs-4">
+                          <strong>Party:</strong>
+                        </div>
+                        <div class="col-xs-8 text-capitalize">
+                          {{ party.name }}
+                        </div>
+                        <div class="col-xs-4">
+                          <strong>Date Range:</strong>
+                        </div>
+                        <div class="col-xs-8">
+                          {{ data['start_date']|dateformat }} - {{ data['end_date']|dateformat }}
+                        </div>
+                    {% endblock %}
+                </div>
+              </div>
+              <div class="col-xs-12">
+                <hr />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12">
+                {% block table scoped %}
+                    {% set amount_format = data['amount_format'] %}
+                    <table class="table">
+                      <thead>
+                        <th>Date</th>
+                        <th>Maturity Date</th>
+                        <th>Account</th>
+                        <th>Origin/Description</th>
+                        {% if amount_format == 'cr/dr' %}
+                          <th class="text-right">Debit</th>
+                          <th class="text-right">Credit</th>
+                        {% elif amount_format == '+/-' %}
+                          <th class="text-right">Amount</th>
+                        {% endif %}
+                        <th class="text-right">Balance</th>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td colspan="2" />
+                            <td colspan="2" nowrap>Opening Balance</td>
+                            {% set opening_balance = party.get_opening_balance_on(data['start_date']) %}
+                              <td {% if amount_format == 'cr/dr' %} colspan="2" {% endif %} />
+                            <td class="text-right" nowrap>
+                              {{ display_balance(opening_balance, company.currency) }}
+                            </td>
+                        </tr>
+                        {% if consider_maturity_date %}
+                            <tr>
+                                <td colspan="2" />
+                                <td colspan="2" nowrap>Opening Balance(Mature)</td>
+                                <td {% if amount_format == 'cr/dr' %} colspan="2" {% endif %} />
+                                <td class="text-right" >{{ party.get_opening_balance_on(data['start_date'])|currencyformat(company.currency.code) }}</td>
+                            </tr>
+                        {% endif %}
+                        {% for line in move_lines %}
+                            <tr>
+                                <td nowrap>{{ line.date|dateformat }}</td>
+                                <td nowrap>{{ line.maturity_date|dateformat }}</td>
+                                <td nowrap>{{ line.account.rec_name }}</td>
+                                <td>
+                                  {{ line.origin_details() or '' }}
+                                  {% if line.description or line.move_description %}
+                                    {% if line.origin %}<br/>{% endif %}{{ line.description or line.move_description }}
+                                  {% endif %}
+                                </td>
+                                {% if amount_format == 'cr/dr' %}
+                                  <td class="text-right" nowrap>
+                                    {% if line.debit %}
+                                      {{ line.debit|currencyformat(line.account.currency.code) }}
+                                    {% endif %}
+                                  </td>
+                                  <td class="text-right" nowrap>
+                                    {% if line.credit %}
+                                      {{ line.credit|currencyformat(line.account.currency.code) }}
+                                    {% endif %}
+                                  </td>
+                                {% elif amount_format == '+/-' %}
+                                  <td class="text-right" nowrap>
+                                    {% if line.debit %}
+                                      - {{ line.debit|currencyformat(line.account.currency.code) }}
+                                    {% elif line.credit %}
+                                      + {{ line.credit|currencyformat(line.account.currency.code) }}
+                                    {% endif %}
+                                  </td>
+                                {% endif %}
+                                <td class="text-right" nowrap>
+                                  {% set opening_balance = opening_balance + line.debit - line.credit %}
+                                  {% if opening_balance %}
+                                    {{ display_balance(opening_balance, company.currency) }}
+                                  {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        {% if not move_lines %}
+                          <tr>
+                            <td class="alert alert-warning" role="alert" colspan="7">No statements found for this period</td>
+                          </tr>
+                        {% endif %}
+                        {% if amount_format == 'cr/dr' %}
+                          <tr>
+                            <td colspan="4" />
+                            <td class="text-right">{{ move_lines|sum(attribute='debit')|currencyformat(company.currency.code) }}</td>
+                            <td class="text-right">{{ move_lines|sum(attribute='credit')|currencyformat(company.currency.code) }}</td>
+                            <td />
+                          </tr>
+                        {% endif %}
+                        <tr>
+                            <td colspan="2" />
+                            <td colspan="2">Closing Balance</td>
+                            <td {% if amount_format == 'cr/dr' %} colspan="2" {% endif %} />
+                            {% set closing_balance = party.get_balance_on(data['end_date']) %}
+                            <td class="text-right" nowrap>
+                              {{ display_balance(closing_balance, company.currency) }}
+                            </td>
+                        </tr>
+                        {% if consider_maturity_date %}
+                            <tr>
+                              <td colspan="{% if amount_format == 'cr/dr' %}7{% elif amount_format == '+/-'%}6{% endif %}" class="h4">
+                                Lines maturing in this period
+                              </td>
+                            </tr>
+                            {% for line in get_move_lines_maturing(party, data['start_date'], data['end_date']) %}
+                                <tr>
+                                    <td nowrap>{{ line.date|dateformat }}</td>
+                                    <td nowrap>{{ line.maturity_date|dateformat }}</td>
+                                    <td nowrap>{{ line.account.rec_name }}</td>
+                                    <td>
+                                      {{ line.origin_details() or '' }}
+                                      {% if line.description or line.move_description %}
+                                        {% if line.origin %}<br/>{% endif %}{{ line.description or line.move_description }}
+                                      {% endif %}
+                                    </td>
+                                    {% if amount_format == 'cr/dr' %}
+                                      <td class="text-right" nowrap>
+                                        {% if line.debit %}
+                                          {{ line.debit|currencyformat(line.account.currency.code) }}
+                                        {% endif %}
+                                      </td>
+                                      <td class="text-right" nowrap>
+                                        {% if line.credit %}
+                                          {{ line.credit|currencyformat(line.account.currency.code) }}
+                                        {% endif %}
+                                      </td>
+                                    {% elif amount_format == '+/-' %}
+                                      <td class="text-right" nowrap>
+                                        {% if line.debit %}
+                                          - {{ line.debit|currencyformat(line.account.currency.code) }}
+                                        {% elif line.credit %}
+                                          + {{ line.credit|currencyformat(line.account.currency.code) }}
+                                        {% endif %}
+                                      </td>
+                                    {% endif %}
+                                    <td />
+                                </tr>
+                            {% else %}
+                                <tr>
+                                  <td colspan="{% if amount_format == 'cr/dr' %}7{% elif amount_format == '+/-'%}6{% endif %}" class="alert alert-warning" role="alert">
+                                    No moves maturing in this period.
+                                  </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                      </tbody>
+                    </table>
+                {% endblock %}
+              </div>
+            </div>
+        </div>
+      {% endblock %}
+    </body>
+</html>
