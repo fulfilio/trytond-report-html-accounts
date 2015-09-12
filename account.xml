@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        <record model="ir.action.report" id="account.report_aged_balance">
+            <field name="name">Aged Balance</field>
+            <field name="model"></field>
+            <field name="report_name">account.aged_balance</field>
+            <field name="report">report_html_accounts/reports/aged_balance.html</field>
+        </record>
+    </data>
+</tryton>

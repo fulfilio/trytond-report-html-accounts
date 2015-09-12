@@ -3,7 +3,7 @@ from trytond.pool import Pool
 from report_html_accounts import PartyAccountStatementReport, \
     GeneratePartyAccountStatementReportStart, \
     GeneratePartyAccountStatementReport, Party
-from account import AccountMoveLine
+from account import AccountMoveLine, AgedBalance
 from invoice import InvoiceHTMLReport
 
 
@@ -24,5 +24,6 @@ def register():
     Pool.register(
         PartyAccountStatementReport,
         InvoiceHTMLReport,
+        AgedBalance,
         module='report_html_accounts', type_='report'
     )
