@@ -41,6 +41,11 @@
         font-size: 14px;
         font-weight: bold;
       }
+      @media print {
+        a:link:after, a:visited:after {
+          content: "";
+        }
+      }
     </style>
     {% endblock custom_style %}
   </head>
