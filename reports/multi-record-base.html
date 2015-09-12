@@ -1,0 +1,30 @@
+{% extends 'report_html_accounts/reports/base.html' %}
+
+{% block body %}
+{% for record in records %}
+  {# loop will not be available in the context of scoped block #}
+  {% set first = loop.first %}
+
+  {% block main scoped %}
+  <div class="container-fluid {% if not first %}page-break{% endif %}">
+    <div class="row">
+      <div class="col-xs-6">
+        {% block company_header scoped %}
+        {% include header %}
+        {% endblock company_header %}
+      </div>
+      <div class="col-xs-6">
+        {% block report_header scoped %}
+        {% endblock report_header %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+      {% block report_body scoped %}
+      {% endblock report_body %}
+      </div>
+    </div>
+  </div>
+  {% endblock main %}
+{% endfor %}
+{% endblock body %}

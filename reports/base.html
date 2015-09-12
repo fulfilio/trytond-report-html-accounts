@@ -6,32 +6,23 @@
     <meta name="description" content="">
     <meta name="author" content="Fulfil.IO Inc.">
 
-    <!-- Latest compiled and minified CSS -->
+    {% block stylesheets %}
+    {% if report.extension == 'html' %}
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    {% else %}
+    <!-- Local copy of Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="{{ 'report_html_stock/reports/css/bootstrap/css/bootstrap.min.css'|modulepath }}">
+    <link rel="stylesheet" href="{{ 'report_html_stock/reports/css/font-awesome/css/font-awesome.min.css'|modulepath }}">
+    {% endif %}
+    {% endblock stylesheets %}
+
+    {% block custom_style %}
     <style type="text/css">
       hr {
         border-top: 1px solid #000;
       }
-      .h3 {
-        font-size: 16px;
-      }
-      .h2 {
-        font-size: 20px;
-      }
       body {
-        font-family: 'Ariel';
-        font-size: 10px;
-      }
-      .b-right {
-        border-right: 1px solid #ddd;
-        width: 50%;
-      }
-      .b-right-hidden {
-        width: 50%;
-      }
-      .b-hide {
-        border: hidden;
       }
       .page-break {
         padding-top: 10px;
@@ -43,33 +34,41 @@
       tbody tr {
         page-break-inside: avoid;
       }
-      .base-tax-padding {
-        padding-top: 2px !important;
-        padding-left: 2px !important;
-        padding-bottom: 2px !important;
+      table.no-border td {
+        border: 0px !important;
       }
-      .text12 {
-        font-size: 12px;
-      }
-      .font-bold {
+      .summary {
+        font-size: 14px;
         font-weight: bold;
       }
-      .borderless tbody tr td{
-        border: none !important;
-      }
-      .bottom2px tbody td{
-        padding-bottom: 2px !important;
-      }
-      .top2px tbody td{
-        padding-top: 2px !important;
-      }
-      .top-bottom-border {
-        border-top: 1px solid #ddd;
-        border-bottom: 1px solid #ddd;
-      }
     </style>
+    {% endblock custom_style %}
   </head>
   <body>
-    {% block main %}{% endblock %}
+    {% block body %}
+
+    {% block main scoped %}
+    <div class="container-fluid {% if not first %}page-break{% endif %}">
+      <div class="row">
+        <div class="col-xs-6">
+          {% block company_header scoped %}
+          {% include header %}
+          {% endblock company_header %}
+        </div>
+        <div class="col-xs-6">
+          {% block report_header scoped %}
+          {% endblock report_header %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+        {% block report_body scoped %}
+        {% endblock report_body %}
+        </div>
+      </div>
+    </div>
+    {% endblock main %}
+
+    {% endblock body %}
   </body>
 </html>
