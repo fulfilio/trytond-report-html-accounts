@@ -1,0 +1,97 @@
+{% extends 'report_html_accounts/reports/base.html' %}
+
+{% block title %}Aged Balances{% endblock %}
+
+{% block report_header %}
+<div class="clearfix">
+  <h3 class="pull-right">Aged Balances</h3>
+</div>
+<div class="clearfix top20">
+  <dl class="dl-horizontal pull-right">
+    <dt>Includes</dt>
+    {% for each in ('payable', 'receivable') %}
+    <dd>
+      {% if each in kind %}
+      <i class="fa fa-check-square-o"></i> 
+      {% else %}
+      <i class="fa fa-square-o"></i> 
+      {% endif %}
+      {{ each|capitalize }}
+    </dd>
+    {% endfor  %}
+    <dt>States</dt>
+    {% if posted %}
+    <dd><i class="fa fa-check-square-o"></i> Posted</dd>
+    <dd><i class="fa fa-square-o"></i> Draft</dd>
+    {% else %}
+    <dd><i class="fa fa-check-square-o"></i> Posted</dd>
+    <dd><i class="fa fa-check-square-o"></i> Draft</dd>
+    {% endif %}
+  </dl>
+</div>
+{% endblock report_header %}
+
+
+{% block report_body scoped %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Party</th>
+        <th class="text-center">Current</th>
+        {% for term in terms %}
+        <th class="text-center">{{ term }} {{ unit }}s</th>
+        {% endfor %}
+        <th class="text-center">{{ terms[-1] }}+ {{ unit }}s</th>
+        <th class="text-center">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for party in parties %}
+        <tr>
+          <td>
+            <a href="{{ party.__url__ }}">{{ party.rec_name }}</a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party) }}">
+              {{ (party.receivable_today - party.payable_today)|currencyformat(currency_code) }}
+            </a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party, 1) }}">
+              {{ balances[party.id]['term1']|currencyformat(currency_code) }}
+            </a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party, 2) }}">
+              {{ balances[party.id]['term2']|currencyformat(currency_code) }}
+            </a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party, 3) }}">
+              {{ balances[party.id]['term3']|currencyformat(currency_code) }}
+            </a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party, 'older') }}">
+              {{ balances[party.id]['older']|currencyformat(currency_code)}}
+            </a>
+          </td>
+          <td align="right">
+            <a href="{{ get_balance_url(party) }}">
+              {{ (party.receivable - party.payable)|currencyformat(currency_code) }}
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      <tr class="info summary">
+        <td>Total</td>
+        <td align="right">{{ totals['current']|currencyformat(currency_code) }}</td>
+        <td align="right">{{ totals['term1']|currencyformat(currency_code) }}</td>
+        <td align="right">{{ totals['term2']|currencyformat(currency_code) }}</td>
+        <td align="right">{{ totals['term3']|currencyformat(currency_code) }}</td>
+        <td align="right">{{ totals['older']|currencyformat(currency_code) }}</td>
+        <td align="right">{{ totals['net']|currencyformat(currency_code) }}</td>
+      </tr>
+    </tbody>
+  </table>
+{% endblock report_body %}
