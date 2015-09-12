@@ -116,10 +116,10 @@ class AgedBalance(ReportWebkit):
                 totals[term] += balance
                 party = Party(party)
                 totals['current'] += (
-                    party.receivable_today - party.payable_today
+                    party.receivable_today + party.payable_today
                 )
                 totals['net'] += (
-                    party.receivable - party.payable
+                    party.receivable + party.payable
                 )
 
         def get_balance_url(party, term=None):
