@@ -142,7 +142,8 @@ class AgedBalance(ReportWebkit):
         for party, balance in get_current_by_party(today):
             res[party]['current'] = balance
             totals['current'] += balance
-            party = Party(party)
+
+        for party in Party.browse(res.keys()):
             res[party.id]['total'] = party.receivable + party.payable
             totals['net'] += res[party.id]['total']
 
