@@ -65,6 +65,30 @@ class AgedBalance(ReportWebkit):
         with Transaction().set_context(context=localcontext):
             line_query, _ = MoveLine.query_get(line)
 
+        def get_current_by_party(today):
+            """
+            Not Due Yet + Without Maturity date
+            """
+            term_query = line.maturity_date == None
+            term_query |= line.maturity_date > today
+            cursor.execute(
+                *line.join(
+                    move, condition=line.move == move.id
+                ).join(
+                    account, condition=line.account == account.id
+                ).select(
+                    line.party, Sum(line.debit) - Sum(line.credit),
+                    where=(line.party != None)
+                    & account.active
+                    & account.kind.in_(kind)
+                    & (line.reconciliation == None)
+                    & (account.company == data['company'])
+                    & term_query & line_query,
+                    group_by=line.party,
+                    having=(Sum(line.debit) - Sum(line.credit)) != 0)
+            )
+            return cursor.fetchall()
+
         def get_balance_by_party(to_date, from_date):
             term_query = line.maturity_date <= to_date
             term_query &= line.maturity_date > from_date
@@ -114,13 +138,13 @@ class AgedBalance(ReportWebkit):
             for party, balance in get_balance_by_party(*date_range):
                 res[party][term] = balance
                 totals[term] += balance
-                party = Party(party)
-                totals['current'] += (
-                    party.receivable_today + party.payable_today
-                )
-                totals['net'] += (
-                    party.receivable + party.payable
-                )
+
+        for party, balance in get_current_by_party(today):
+            res[party]['current'] = balance
+            totals['current'] += balance
+            party = Party(party)
+            res[party.id]['total'] = party.receivable + party.payable
+            totals['net'] += res[party.id]['total']
 
         def get_balance_url(party, term=None):
             "Given a party and term number (1-3) or older return URI"
@@ -133,7 +157,16 @@ class AgedBalance(ReportWebkit):
             if data['posted']:
                 domain.append(('move.state', '=', 'posted'))
 
-            if term is not None:
+            if term == 'current':
+                domain.append([
+                    'OR', [
+                        ('maturity_date', '>', today),
+                    ], [
+                        ('maturity_date', '=', None),
+                    ],
+                ])
+
+            elif term is not None:
                 # Add the date range
                 term_index = 4 if term == 'older' else term
                 to_date, from_date = dates[term_index - 1], dates[term_index]
