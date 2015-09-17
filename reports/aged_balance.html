@@ -52,8 +52,8 @@
             <a href="{{ party.__url__ }}">{{ party.rec_name }}</a>
           </td>
           <td align="right">
-            <a href="{{ get_balance_url(party) }}">
-              {{ (party.receivable_today - party.payable_today)|currencyformat(currency_code) }}
+            <a href="{{ get_balance_url(party, 'current') }}">
+              {{ balances[party.id]['current']|currencyformat(currency_code) }}
             </a>
           </td>
           <td align="right">
@@ -78,7 +78,7 @@
           </td>
           <td align="right">
             <a href="{{ get_balance_url(party) }}">
-              {{ (party.receivable - party.payable)|currencyformat(currency_code) }}
+              {{ balances[party.id]['total']|currencyformat(currency_code) }}
             </a>
           </td>
         </tr>
