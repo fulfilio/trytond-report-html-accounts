@@ -25,7 +25,7 @@ class AccountMoveLine:
         """
         Model = Pool().get('ir.model')
 
-        if not self.origin:
+        if self.origin is None or self.origin.id < 0:
             return None
 
         model, = Model.search([
@@ -69,7 +69,7 @@ class AgedBalance(ReportWebkit):
             """
             Not Due Yet + Without Maturity date
             """
-            term_query = line.maturity_date == None
+            term_query = line.maturity_date is None
             term_query |= line.maturity_date > today
             cursor.execute(
                 *line.join(
@@ -78,10 +78,10 @@ class AgedBalance(ReportWebkit):
                     account, condition=line.account == account.id
                 ).select(
                     line.party, Sum(line.debit) - Sum(line.credit),
-                    where=(line.party != None)
+                    where=(line.party is not None)
                     & account.active
                     & account.kind.in_(kind)
-                    & (line.reconciliation == None)
+                    & (line.reconciliation is None)
                     & (account.company == data['company'])
                     & term_query & line_query,
                     group_by=line.party,
@@ -99,10 +99,10 @@ class AgedBalance(ReportWebkit):
                     account, condition=line.account == account.id
                 ).select(
                     line.party, Sum(line.debit) - Sum(line.credit),
-                    where=(line.party != None)
+                    where=(line.party is not None)
                     & account.active
                     & account.kind.in_(kind)
-                    & (line.reconciliation == None)
+                    & (line.reconciliation is None)
                     & (account.company == data['company'])
                     & term_query & line_query,
                     group_by=line.party,
