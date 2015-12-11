@@ -25,7 +25,9 @@ class AccountMoveLine:
         """
         Model = Pool().get('ir.model')
 
-        if self.origin is None or self.origin.id < 0:
+        try:
+            self.origin.rec_name
+        except AttributeError:
             return None
 
         model, = Model.search([
