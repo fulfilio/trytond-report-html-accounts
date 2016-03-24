@@ -9,6 +9,7 @@
             <field name="model">account.invoice</field>
             <field name="report_name">account.invoice.html</field>
             <field name="report">report_html_accounts/reports/invoice.html</field>
+            <field name="extension">pdf</field>
         </record>
         <record model="ir.action.keyword" id="print_keyword">
             <field name="keyword">form_print</field>
