@@ -17,7 +17,7 @@
             <field name="wiz_name">report.party_account_statement.wizard</field>
         </record>
         <record model="ir.action.keyword" id="run_party_account_statement_wizard">
-            <field name="keyword">form_action</field>
+            <field name="keyword">form_print</field>
             <field name="model">party.party,-1</field>
             <field name="action" ref="wizard_party_account_statement_report"/>
         </record>
