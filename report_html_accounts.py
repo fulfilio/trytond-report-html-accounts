@@ -60,10 +60,14 @@ class PartyAccountStatementReport(ReportMixin):
     __name__ = 'report.party_account_statement'
 
     @classmethod
-    def parse(cls, report, records, data, localcontext):
+    def get_context(cls, records, data):
         MoveLine = Pool().get('account.move.line')
         Party = Pool().get('party.party')
         User = Pool().get('res.user')
+
+        report_context = super(PartyAccountStatementReport, cls).get_context(
+            records, data
+        )
 
         if not data['party_id']:
             raise UserError(
@@ -71,7 +75,7 @@ class PartyAccountStatementReport(ReportMixin):
             )
         party = Party(data['party_id'])
         user = User(Transaction().user)
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         query, tables = party._get_balance_query(
             data['end_date'], data['start_date'], data['hide_reconciled_lines']
@@ -89,7 +93,7 @@ class PartyAccountStatementReport(ReportMixin):
             [id[0] for id in cursor.fetchall()]
         )
 
-        localcontext.update({
+        report_context.update({
             'move_lines': move_lines,
             'party': party,
             'relativedelta': lambda *args, **kargs: relativedelta(
@@ -100,9 +104,7 @@ class PartyAccountStatementReport(ReportMixin):
                 lambda *args, **kargs: cls.get_move_lines_maturing(
                     *args, **kargs),
         })
-        return super(PartyAccountStatementReport, cls).parse(
-            report, records, data, localcontext
-        )
+        return report_context
 
     @classmethod
     def get_move_lines_maturing(cls, party, start_date, end_date):
@@ -115,7 +117,7 @@ class PartyAccountStatementReport(ReportMixin):
         Account = Pool().get('account.account')
 
         user = User(Transaction().user)
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         line = AccountMoveLines.__table__()
         move = AccountMove.__table__()
@@ -132,13 +134,13 @@ class PartyAccountStatementReport(ReportMixin):
             condition=line.move == move.id,
         ).select(
             line.id,
-            where=account.active
-            & (line.party == party.id)
-            & (account.company == user.company.id)
-            & (account.kind.in_(('receivable', 'payable')))
-            & (line.maturity_date >= start_date)
-            & (line.maturity_date <= end_date)
-            & line_query,
+            where=account.active &
+            (line.party == party.id) &
+            (account.company == user.company.id) &
+            (account.kind.in_(('receivable', 'payable'))) &
+            (line.maturity_date >= start_date) &
+            (line.maturity_date <= end_date) &
+            line_query,
             order_by=move.date.asc
         )
         cursor.execute(*query)
@@ -263,12 +265,12 @@ class Party:
             move,
             condition=line.move == move.id
         ).select(
-            where=account.active
-            & (account.kind.in_(('receivable', 'payable')))
-            & (line.party == self.id)
-            & (account.company == company_id)
-            & line_query
-            & date_where
+            where=account.active &
+            (account.kind.in_(('receivable', 'payable'))) &
+            (line.party == self.id) &
+            (account.company == company_id) &
+            line_query &
+            date_where
         )
         if unreconciled_lines_only:
             query.where &= (line.reconciliation == None)  # noqa
@@ -280,7 +282,7 @@ class Party:
 
         :param date: The date for which balance has to be calculated
         """
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         query, tables = self._get_balance_query(date)
         line = tables['account.move.line']
