@@ -55,7 +55,7 @@ class AgedBalance(ReportWebkit):
         Account = pool.get('account.account')
         Company = pool.get('company.company')
         Date = pool.get('ir.date')
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
 
         line = MoveLine.__table__()
         move = Move.__table__()
@@ -80,12 +80,13 @@ class AgedBalance(ReportWebkit):
                     account, condition=line.account == account.id
                 ).select(
                     line.party, Sum(line.debit) - Sum(line.credit),
-                    where=(line.party != None)
-                    & account.active
-                    & account.kind.in_(kind)
-                    & (line.reconciliation == None)
-                    & (account.company == data['company'])
-                    & term_query & line_query,
+                    where=(line.party != None) &
+                    account.active &
+                    account.kind.in_(kind) &
+                    (line.reconciliation == None) &
+                    (account.company == data['company']) &
+                    term_query &
+                    line_query,
                     group_by=line.party,
                     having=(Sum(line.debit) - Sum(line.credit)) != 0)
             )
@@ -101,12 +102,13 @@ class AgedBalance(ReportWebkit):
                     account, condition=line.account == account.id
                 ).select(
                     line.party, Sum(line.debit) - Sum(line.credit),
-                    where=(line.party != None)
-                    & account.active
-                    & account.kind.in_(kind)
-                    & (line.reconciliation == None)
-                    & (account.company == data['company'])
-                    & term_query & line_query,
+                    where=(line.party != None) &
+                    account.active &
+                    account.kind.in_(kind) &
+                    (line.reconciliation == None) &
+                    (account.company == data['company']) &
+                    term_query &
+                    line_query,
                     group_by=line.party,
                     having=(Sum(line.debit) - Sum(line.credit)) != 0)
             )

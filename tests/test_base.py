@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-import unittest
 import datetime
 from dateutil.relativedelta import relativedelta
 
 import trytond.tests.test_tryton
-from trytond.tests.test_tryton import POOL, USER, CONTEXT
+from trytond.tests.test_tryton import POOL, USER, ModuleTestCase
 from trytond.transaction import Transaction
 from trytond.pyson import Eval
 
 
-class BaseTestCase(unittest.TestCase):
+class BaseTestCase(ModuleTestCase):
     '''
     Base Test Case for report_html_accounts module.
     '''
+    module = 'report_html_accounts'
 
     def setUp(self):
         """
@@ -164,7 +164,8 @@ class BaseTestCase(unittest.TestCase):
             'main_company': self.company,
         })
 
-        CONTEXT.update(self.User.get_preferences(context_only=True))
+        Transaction().context.update(
+            self.User.get_preferences(context_only=True))
 
         # Create Fiscal Year
         self.fiscal_year = self._create_fiscal_year(company=self.company.id)
