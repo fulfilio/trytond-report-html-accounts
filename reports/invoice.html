@@ -1,7 +1,7 @@
 {% extends 'report_html_accounts/reports/base.html' %}
 
 {% block title %}
-  Invoice {{ records|join('# ', 'number') }}
+  Invoice {{ records|selectattr('number')|join('# ', 'number') }}
 {% endblock %}
 
 {% block main %}
