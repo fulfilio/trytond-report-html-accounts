@@ -47,7 +47,7 @@ class AgedBalance(ReportWebkit):
     __name__ = 'account.aged_balance'
 
     @classmethod
-    def parse(cls, report, objects, data, localcontext):
+    def get_context(cls, objects, data):
         pool = Pool()
         Party = pool.get('party.party')
         MoveLine = pool.get('account.move.line')
@@ -56,15 +56,16 @@ class AgedBalance(ReportWebkit):
         Company = pool.get('company.company')
         Date = pool.get('ir.date')
         cursor = Transaction().connection.cursor()
+        report_context = super(AgedBalance, cls).get_context(objects, data)
 
         line = MoveLine.__table__()
         move = Move.__table__()
         account = Account.__table__()
 
         company = Company(data['company'])
-        localcontext['digits'] = company.currency.digits
-        localcontext['posted'] = data['posted']
-        with Transaction().set_context(context=localcontext):
+        report_context['digits'] = company.currency.digits
+        report_context['posted'] = data['posted']
+        with Transaction().set_context(context=report_context):
             line_query, _ = MoveLine.query_get(line)
 
         def get_current_by_party(today):
@@ -186,16 +187,13 @@ class AgedBalance(ReportWebkit):
                 ])
             ))
 
-        localcontext['parties'] = Party.search([('id', 'in', res.keys())])
-        localcontext['balances'] = res
-        localcontext['totals'] = totals
-        localcontext['kind'] = kind
-        localcontext['terms'] = terms
-        localcontext['unit'] = data['unit']
-        localcontext['report'] = report
-        localcontext['currency_code'] = company.currency.code
-        localcontext['get_balance_url'] = get_balance_url
+        report_context['parties'] = Party.search([('id', 'in', res.keys())])
+        report_context['balances'] = res
+        report_context['totals'] = totals
+        report_context['kind'] = kind
+        report_context['terms'] = terms
+        report_context['unit'] = data['unit']
+        report_context['currency_code'] = company.currency.code
+        report_context['get_balance_url'] = get_balance_url
 
-        return super(AgedBalance, cls).parse(
-            report, objects, data, localcontext
-        )
+        return report_context
