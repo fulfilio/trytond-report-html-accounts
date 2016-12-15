@@ -6,6 +6,7 @@
             <field name="model"></field>
             <field name="report_name">report.party_account_statement</field>
             <field name="report">report_html_accounts/reports/party_account_statement.html</field>
+            <field name="extension">pdf</field>
         </record>
         <record model="ir.ui.view" id="report_party_account_statement_view_form">
             <field name="model">report.party_account_statement.wizard.start</field>
